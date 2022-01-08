@@ -2,6 +2,7 @@ package com.example.proximityworks.network
 
 import com.example.proximityworks.data.SocketUpdate
 import com.example.proximityworks.network.sockets.WebSocketListener
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -9,6 +10,7 @@ import okhttp3.WebSocket
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+@ExperimentalCoroutinesApi
 class WebServiceProvider @Inject constructor(){
     private var _webSocket: WebSocket? = null
 

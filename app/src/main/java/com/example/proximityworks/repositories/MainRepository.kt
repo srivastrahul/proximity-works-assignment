@@ -6,6 +6,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import javax.inject.Inject
 
+@ExperimentalCoroutinesApi
 class MainRepository @Inject constructor(private val webServicesProvider: WebServiceProvider) {
 
     @ExperimentalCoroutinesApi

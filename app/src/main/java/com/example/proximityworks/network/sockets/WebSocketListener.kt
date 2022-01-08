@@ -1,5 +1,6 @@
 package com.example.proximityworks.network.sockets
 
+import android.util.Log
 import com.example.proximityworks.data.SocketUpdate
 import com.example.proximityworks.network.WebServiceProvider.Companion.NORMAL_CLOSURE_STATUS
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,9 +17,15 @@ class WebSocketListener: WebSocketListener() {
 
     val socketEventChannel: Channel<SocketUpdate> = Channel(10)
 
-    override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+    override fun onOpen(webSocket: WebSocket, response: Response) {
+        super.onOpen(webSocket, response)
+        Log.i("Socket Response: ", response.message)
+    }
+
+    override fun onMessage(webSocket: WebSocket, text: String) {
+        super.onMessage(webSocket, text)
         GlobalScope.launch {
-            socketEventChannel.send(SocketUpdate(byteString = bytes))
+            socketEventChannel.send(SocketUpdate(text = text))
         }
     }
 
