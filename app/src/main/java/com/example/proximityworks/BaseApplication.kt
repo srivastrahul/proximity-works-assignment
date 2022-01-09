@@ -17,9 +17,8 @@ class BaseApplication: Application() {
             return instance!!.applicationContext
         }
 
-
         val appComponent = DaggerApplicationComponent.create()
-
     }
+
 
 }

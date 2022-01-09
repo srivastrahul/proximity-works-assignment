@@ -1,6 +1,6 @@
 package com.example.proximityworks.di
 
-import com.example.proximityworks.MainActivity
+import com.example.proximityworks.view.MainActivity
 import dagger.Component
 import javax.inject.Singleton
 
