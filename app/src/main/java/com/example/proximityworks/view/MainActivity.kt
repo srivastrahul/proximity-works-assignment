@@ -44,6 +44,11 @@ class MainActivity : AppCompatActivity() {
         viewModel.subscribeToSocketEvents()
     }
 
+    override fun onStop() {
+        super.onStop()
+        viewModel.closeSocket()
+    }
+
     private fun setObservers() {
         viewModel.getLastUpdatedCityAqiList().observe(this, {
             if (it.isNotEmpty())
@@ -53,9 +58,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun setUpUI() {
         cityAqiRecyclerView = mainActivityBinding.cityAqiRV
-        cityAqiAdapter = CityAqiAdapter()
+        cityAqiAdapter = CityAqiAdapter(onClickLambda)
         linearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         cityAqiRecyclerView.layoutManager = linearLayoutManager
         cityAqiRecyclerView.adapter = cityAqiAdapter
+    }
+
+    private val onClickLambda = { city: String? ->
+        viewModel.selectedCity = city!!
+        viewModel.selectedCityAqiList = viewModel.getCityAqiMap().value?.get(city)!!
+        val bottomSheetDialog = BottomSheetDialog()
+        bottomSheetDialog.show(supportFragmentManager, BottomSheetDialog.TAG)
     }
 }

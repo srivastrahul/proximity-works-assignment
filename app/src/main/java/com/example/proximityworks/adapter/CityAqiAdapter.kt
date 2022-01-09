@@ -9,7 +9,7 @@ import com.example.proximityworks.data.CityAqiTime
 import com.example.proximityworks.databinding.ItemCityAqiBinding
 import com.example.proximityworks.utilities.CityAqiTimeDiffCallback
 
-class CityAqiAdapter: RecyclerView.Adapter<CityAqiAdapter.CityAqiViewHolder>() {
+class CityAqiAdapter(private val onClickLambda: (String?) -> Unit): RecyclerView.Adapter<CityAqiAdapter.CityAqiViewHolder>() {
     var dataList = ArrayList<CityAqiTime>()
 
     fun setData(cityAqiList: ArrayList<CityAqiTime>) {
@@ -24,7 +24,9 @@ class CityAqiAdapter: RecyclerView.Adapter<CityAqiAdapter.CityAqiViewHolder>() {
     inner class CityAqiViewHolder(private val binding: ItemCityAqiBinding): RecyclerView.ViewHolder(binding.root) {
 
         fun bind (position: Int) {
-            binding.root.setOnClickListener {  }
+            binding.root.setOnClickListener {
+                onClickLambda(dataList[position].city)
+            }
             binding.setVariable(BR.cityAqiItem, dataList[position])
             binding.executePendingBindings()
         }
