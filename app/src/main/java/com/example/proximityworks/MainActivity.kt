@@ -2,6 +2,7 @@ package com.example.proximityworks
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.example.proximityworks.databinding.ActivityMainBinding
@@ -25,6 +26,7 @@ class MainActivity : AppCompatActivity() {
         mainActivityBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
+        setObservers()
 
 
     }
@@ -34,5 +36,13 @@ class MainActivity : AppCompatActivity() {
         mainActivityBinding.clickBtn.setOnClickListener {
             viewModel.subscribeToSocketEvents()
         }
+    }
+
+    private fun setObservers() {
+        viewModel.getCityAqiMap().observe(this, {
+            if (it.isNotEmpty())
+                for (item in it.entries)
+                    Log.i("${item.key}: ", "AQI: ${item.value.toString()}")
+        })
     }
 }

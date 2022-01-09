@@ -1,25 +1,46 @@
 package com.example.proximityworks.viewmodels
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.proximityworks.repositories.MainRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 import javax.inject.Inject
 
+@ExperimentalCoroutinesApi
 class MainViewModel @Inject constructor(
     private val mainRepository: MainRepository
-): ViewModel() {
+) : ViewModel() {
+    private val cityAqiHashMap = HashMap<String, ArrayList<Double>>()
+    private val _cityHashMapMLD = MutableLiveData<HashMap<String, ArrayList<Double>>>()
 
-    @ExperimentalCoroutinesApi
+
     fun subscribeToSocketEvents() {
-        viewModelScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             try {
                 mainRepository.startSocket().consumeEach {
                     if (it.exception == null) {
-                        println("Collecting : ${it.text}")
+
+                        //logic to populate hashmap
+                        val citiesJSONArray = JSONArray(it.text)
+                        for (i in 0 until citiesJSONArray.length()) {
+                            val cityAqiObject = citiesJSONArray[i] as JSONObject
+                            val city = cityAqiObject.optString("city")
+                            val cityAqi = cityAqiObject.optDouble("aqi")
+
+                            if (cityAqiHashMap.containsKey(city)) {
+                                val cityAqiList = cityAqiHashMap[city]
+                                cityAqiList?.add(cityAqi)
+                                cityAqiHashMap[city] = cityAqiList!!
+                            } else cityAqiHashMap[city] = arrayListOf(cityAqi)
+
+                        }
+                        _cityHashMapMLD.postValue(cityAqiHashMap)
+
                     } else {
                         onSocketError(it.exception)
                     }
@@ -34,7 +55,8 @@ class MainViewModel @Inject constructor(
         println("Error occurred : ${ex.message}")
     }
 
-    @ExperimentalCoroutinesApi
+    fun getCityAqiMap(): LiveData<HashMap<String, ArrayList<Double>>> = _cityHashMapMLD
+
     override fun onCleared() {
         mainRepository.closeSocket()
         super.onCleared()
