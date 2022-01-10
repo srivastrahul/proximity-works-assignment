@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import javax.xml.datatype.DatatypeConstants.DAYS
 import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.robinhood.spark.SparkView
 
 
@@ -29,7 +30,7 @@ class BottomSheetDialog: BottomSheetDialogFragment() {
     private val viewModel: MainViewModel by activityViewModels()
     private lateinit var binding: BottomSheetDialogBinding
     private lateinit var sparkView: SparkView
-    //private lateinit var barChart: BarChart
+    private lateinit var barChart: BarChart
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,26 +39,28 @@ class BottomSheetDialog: BottomSheetDialogFragment() {
     ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.bottom_sheet_dialog, container, false)
         sparkView = binding.sparkView
-        //barChart = binding.barChart
+        barChart = binding.barChart
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        configureChartAppearance()
+        prepareChartData(viewModel.createBarData())
         sparkView.adapter = SparkLineAdapter(viewModel.getSelectedCityAqiArray())
-        /*configureChartAppearance()
-        prepareChartData(viewModel.createBarData())*/
     }
 
-    /*private fun configureChartAppearance() {
+    private fun configureChartAppearance() {
         barChart.description.isEnabled = false
         barChart.setDrawValueAboveBar(false)
 
         val xAxis = barChart.xAxis
         xAxis.granularity = 1000000000000F
-        xAxis.setValueFormatter { p0, _ ->
-            val timeFormat = SimpleDateFormat("hh:mm aa", Locale.getDefault())
-            timeFormat.format(p0.toInt())
+        xAxis.valueFormatter = object: IAxisValueFormatter {
+            override fun getFormattedValue(p0: Float, p1: AxisBase?): String {
+                val timeFormat = SimpleDateFormat("hh:mm aa", Locale.getDefault())
+                return timeFormat.format(viewModel.getSelectedCityTimeStampArray()[p0.toInt()])
+            }
         }
 
         val yAxisLeft = barChart.axisLeft
@@ -73,7 +76,7 @@ class BottomSheetDialog: BottomSheetDialogFragment() {
         data.setValueTextSize(12f)
         barChart.data = data
         barChart.invalidate()
-    }*/
+    }
 
     companion object {
         const val TAG = "ModalBottomSheet"

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Proximity Works</string>
+    <string name="bar_chart_title">AQI Bar Chart</string>
+    <string name="sparkline_title">AQI Sparkline</string>
 </resources>

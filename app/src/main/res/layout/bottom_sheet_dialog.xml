@@ -3,20 +3,55 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <RelativeLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
-        <com.robinhood.spark.SparkView
-            android:id="@+id/sparkView"
-            android:layout_margin="10dp"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="500dp"
-            app:spark_lineColor="@color/black"/>
+            android:layout_height="match_parent">
 
-        <!--<com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/barChart"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />-->
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/barChartTitleTV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="10dp"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:text="@string/bar_chart_title"/>
+
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/barChart"
+                android:layout_width="match_parent"
+                android:layout_height="500dp"
+                android:layout_below="@+id/barChartTitleTV"
+                android:layout_margin="10dp" />
+
+            <TextView
+                android:id="@+id/sparkLineTitleTV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/barChart"
+                android:layout_marginTop="10dp"
+                android:layout_centerHorizontal="true"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:text="@string/sparkline_title"/>
+
+            <com.robinhood.spark.SparkView
+                android:id="@+id/sparkView"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_below="@id/sparkLineTitleTV"
+                android:layout_margin="10dp"
+                android:layout_marginTop="20dp"
+                app:spark_lineColor="@color/black" />
+
+
+        </RelativeLayout>
+
+    </androidx.core.widget.NestedScrollView>
 </layout>

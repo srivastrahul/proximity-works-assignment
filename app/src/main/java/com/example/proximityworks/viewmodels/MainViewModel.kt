@@ -20,8 +20,6 @@ import kotlin.collections.HashMap
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet
 
 
-
-
 @ExperimentalCoroutinesApi
 class MainViewModel @Inject constructor(
     private val mainRepository: MainRepository
@@ -33,8 +31,9 @@ class MainViewModel @Inject constructor(
     var timestamp: Long = 0L
     private val _lastUpdatedCityAqiList = MutableLiveData<ArrayList<CityAqiTime>>()
     var selectedCityAqiList = ArrayList<AqiTime>()
+    var selectedTimeIntervalBasedQiList =
+        ArrayList<AqiTime>()  //time interval of 30s from current timestamp
     var selectedCity: String = ""
-
 
 
     fun subscribeToSocketEvents() {
@@ -43,7 +42,7 @@ class MainViewModel @Inject constructor(
                 mainRepository.startSocket().consumeEach {
                     if (it.exception == null) {
 
-                        //logic to populate hashmap
+                        //logic to populate hashmap to store all entries
                         val citiesJSONArray = JSONArray(it.text)
                         if (citiesJSONArray.length() > 0) {
                             timestamp = Calendar.getInstance().timeInMillis
@@ -56,16 +55,24 @@ class MainViewModel @Inject constructor(
                                     val cityAqiList = cityAqiHashMap[city]
                                     cityAqiList?.add(AqiTime(cityAqi, timestamp))
                                     cityAqiHashMap[city] = cityAqiList!!
-                                } else cityAqiHashMap[city] = arrayListOf(AqiTime(cityAqi, timestamp))
+                                } else cityAqiHashMap[city] =
+                                    arrayListOf(AqiTime(cityAqi, timestamp))
 
                             }
                             _cityHashMapMLD.postValue(cityAqiHashMap)
 
+                            //for recycler view adapter
                             cityAqiTimeList = ArrayList()
                             for (item in cityAqiHashMap.entries) {
                                 aqiList = item.value
-                                val aqiListItem = aqiList[aqiList.size-1]
-                                cityAqiTimeList.add(CityAqiTime(item.key, aqiListItem.aqi, aqiListItem.timestamp))
+                                val aqiListItem = aqiList[aqiList.size - 1]
+                                cityAqiTimeList.add(
+                                    CityAqiTime(
+                                        item.key,
+                                        aqiListItem.aqi,
+                                        aqiListItem.timestamp
+                                    )
+                                )
                             }
 
                             _lastUpdatedCityAqiList.postValue(cityAqiTimeList)
@@ -98,17 +105,34 @@ class MainViewModel @Inject constructor(
         super.onCleared()
     }
 
-    /*fun createBarData(): BarData {
+    fun createBarData(): BarData {
         val values = ArrayList<BarEntry>()
+        //reverse selectedCityAqiList to start from latest entry
         selectedCityAqiList.reverse()
-        for (i in 0 until selectedCityAqiList.size)
-            values.add(BarEntry(selectedCityAqiList[i].timestamp?.toFloat()!!, selectedCityAqiList[i].aqi?.toFloat()!!))
+        //populating only 6 entries in reverse chronological order for display
+        selectedTimeIntervalBasedQiList.add(selectedCityAqiList[0])
+        for (i in 1 until selectedCityAqiList.size) {
+            if (selectedTimeIntervalBasedQiList.size == 6)
+                break
+            else if (selectedTimeIntervalBasedQiList[selectedTimeIntervalBasedQiList.size-1].timestamp!! - selectedCityAqiList[i].timestamp!! >= 30000) {
+                selectedTimeIntervalBasedQiList.add(selectedCityAqiList[i])
+            }
+        }
+
+        for (i in 0 until selectedTimeIntervalBasedQiList.size)
+            values.add(BarEntry((i + 1).toFloat(), selectedTimeIntervalBasedQiList[i].aqi?.toFloat()!!))
         val barDataSet = BarDataSet(values, "AQI Index")
         val dataSets: ArrayList<IBarDataSet> = ArrayList()
         dataSets.add(barDataSet)
         return BarData(dataSets)
-    }*/
+    }
 
-    fun getSelectedCityAqiArray() = FloatArray(selectedCityAqiList.size) { i-> selectedCityAqiList[i].aqi?.toFloat()!!}
+    //for spark lines
+    fun getSelectedCityAqiArray() =
+        FloatArray(selectedTimeIntervalBasedQiList.size) { i -> selectedTimeIntervalBasedQiList[i].aqi?.toFloat()!! }
+
+    //for time formatting on x-axis
+    fun getSelectedCityTimeStampArray() =
+        LongArray(selectedTimeIntervalBasedQiList.size) { i -> selectedTimeIntervalBasedQiList[i].timestamp!! }
 
 }
