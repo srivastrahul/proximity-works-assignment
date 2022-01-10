@@ -11,6 +11,7 @@ import androidx.fragment.app.activityViewModels
 import com.example.proximityworks.R
 import com.example.proximityworks.adapter.SparkLineAdapter
 import com.example.proximityworks.databinding.BottomSheetDialogBinding
+import com.example.proximityworks.utilities.TimeFormatter
 import com.example.proximityworks.viewmodels.MainViewModel
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.AxisBase
@@ -56,11 +57,8 @@ class BottomSheetDialog: BottomSheetDialogFragment() {
 
         val xAxis = barChart.xAxis
         xAxis.granularity = 10F
-        xAxis.valueFormatter = object: IAxisValueFormatter {
-            override fun getFormattedValue(p0: Float, p1: AxisBase?): String {
-                val timeFormat = SimpleDateFormat("hh:mm aa", Locale.getDefault())
-                return timeFormat.format(viewModel.getSelectedCityTimeStampArray()[p0.toInt()])
-            }
+        xAxis.valueFormatter = IAxisValueFormatter { p0, _ ->
+            TimeFormatter.convertTimestampTo12HourFormat(viewModel.getSelectedCityTimeStampArray()[p0.toInt()])
         }
 
         val yAxisLeft = barChart.axisLeft

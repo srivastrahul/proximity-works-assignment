@@ -24,8 +24,7 @@ fun bindLastUpdated(view: TextView, timestamp: Long) {
         timeDifference < 60000L -> view.text = text + "A few seconds ago."
         timeDifference in 60000L..119999L -> view.text = text + "A minute ago."
         else -> {
-            val timeFormat = SimpleDateFormat("hh:mm aa", Locale.getDefault())
-            view.text = text + timeFormat.format(timestamp)
+            view.text = text + TimeFormatter.convertTimestampTo12HourFormat(timestamp)
         }
     }
 }
