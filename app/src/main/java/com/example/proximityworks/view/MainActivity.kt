@@ -2,7 +2,9 @@ package com.example.proximityworks.view
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Message
 import android.util.Log
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,6 +14,7 @@ import com.example.proximityworks.R
 import com.example.proximityworks.adapter.CityAqiAdapter
 import com.example.proximityworks.databinding.ActivityMainBinding
 import com.example.proximityworks.di.ViewModelFactory
+import com.example.proximityworks.utilities.ValidationCheckConstants
 import com.example.proximityworks.viewmodels.MainViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
@@ -54,6 +57,12 @@ class MainActivity : AppCompatActivity() {
             if (it.isNotEmpty())
                 cityAqiAdapter.setData(it)
         })
+
+        viewModel.getValidationCheck().observe(this, {
+            when (it.type) {
+                ValidationCheckConstants.NO_INTERNET, ValidationCheckConstants.EXCEPTION_NO_RESPONSE -> showToastMessage(it.message)
+            }
+        })
     }
 
     private fun setUpUI() {
@@ -69,5 +78,9 @@ class MainActivity : AppCompatActivity() {
         viewModel.selectedCityAqiList = viewModel.getCityAqiMap().value?.get(city)!!
         val bottomSheetDialog = BottomSheetDialog()
         bottomSheetDialog.show(supportFragmentManager, BottomSheetDialog.TAG)
+    }
+
+    private fun showToastMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 }

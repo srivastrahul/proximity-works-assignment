@@ -3,9 +3,14 @@ package com.example.proximityworks.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.proximityworks.BaseApplication
+import com.example.proximityworks.R
 import com.example.proximityworks.data.AqiTime
 import com.example.proximityworks.data.CityAqiTime
+import com.example.proximityworks.data.ValidationCheck
 import com.example.proximityworks.repositories.MainRepository
+import com.example.proximityworks.utilities.AppUtils
+import com.example.proximityworks.utilities.ValidationCheckConstants
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
@@ -24,6 +29,7 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet
 class MainViewModel @Inject constructor(
     private val mainRepository: MainRepository
 ) : ViewModel() {
+    private val validationCheckMLD = MutableLiveData<ValidationCheck>()
     private val cityAqiHashMap = HashMap<String, ArrayList<AqiTime>>()
     private val _cityHashMapMLD = MutableLiveData<HashMap<String, ArrayList<AqiTime>>>()
     var cityAqiTimeList = ArrayList<CityAqiTime>()
@@ -39,57 +45,83 @@ class MainViewModel @Inject constructor(
     fun subscribeToSocketEvents() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                mainRepository.startSocket().consumeEach {
-                    if (it.exception == null) {
+                if (AppUtils.isInternetAvailable()) {
+                    mainRepository.startSocket().consumeEach {
+                        if (it.exception == null) {
 
-                        //logic to populate hashmap to store all entries
-                        val citiesJSONArray = JSONArray(it.text)
-                        if (citiesJSONArray.length() > 0) {
-                            timestamp = Calendar.getInstance().timeInMillis
-                            for (i in 0 until citiesJSONArray.length()) {
-                                val cityAqiObject = citiesJSONArray[i] as JSONObject
-                                val city = cityAqiObject.optString("city")
-                                val cityAqi = cityAqiObject.optDouble("aqi")
+                            //logic to populate hashmap to store all entries
+                            val citiesJSONArray = JSONArray(it.text)
+                            if (citiesJSONArray.length() > 0) {
+                                timestamp = Calendar.getInstance().timeInMillis
+                                for (i in 0 until citiesJSONArray.length()) {
+                                    val cityAqiObject = citiesJSONArray[i] as JSONObject
+                                    val city = cityAqiObject.optString("city")
+                                    val cityAqi = cityAqiObject.optDouble("aqi")
 
-                                if (cityAqiHashMap.containsKey(city)) {
-                                    val cityAqiList = cityAqiHashMap[city]
-                                    cityAqiList?.add(AqiTime(cityAqi, timestamp))
-                                    cityAqiHashMap[city] = cityAqiList!!
-                                } else cityAqiHashMap[city] =
-                                    arrayListOf(AqiTime(cityAqi, timestamp))
+                                    if (cityAqiHashMap.containsKey(city)) {
+                                        val cityAqiList = cityAqiHashMap[city]
+                                        cityAqiList?.add(AqiTime(cityAqi, timestamp))
+                                        cityAqiHashMap[city] = cityAqiList!!
+                                    } else cityAqiHashMap[city] =
+                                        arrayListOf(AqiTime(cityAqi, timestamp))
 
-                            }
-                            _cityHashMapMLD.postValue(cityAqiHashMap)
+                                }
+                                _cityHashMapMLD.postValue(cityAqiHashMap)
 
-                            //for recycler view adapter
-                            cityAqiTimeList = ArrayList()
-                            for (item in cityAqiHashMap.entries) {
-                                aqiList = item.value
-                                val aqiListItem = aqiList[aqiList.size - 1]
-                                cityAqiTimeList.add(
-                                    CityAqiTime(
-                                        item.key,
-                                        aqiListItem.aqi,
-                                        aqiListItem.timestamp
+                                //for recycler view adapter
+                                cityAqiTimeList = ArrayList()
+                                for (item in cityAqiHashMap.entries) {
+                                    aqiList = item.value
+                                    val aqiListItem = aqiList[aqiList.size - 1]
+                                    cityAqiTimeList.add(
+                                        CityAqiTime(
+                                            item.key,
+                                            aqiListItem.aqi,
+                                            aqiListItem.timestamp
+                                        )
                                     )
-                                )
+                                }
+
+                                _lastUpdatedCityAqiList.postValue(cityAqiTimeList)
                             }
 
-                            _lastUpdatedCityAqiList.postValue(cityAqiTimeList)
+                        } else {
+                            onSocketError(it.exception)
+                            validationCheckMLD.postValue(
+                                ValidationCheck(
+                                    BaseApplication.applicationContext().getString(R.string.something_went_wrong),
+                                    ValidationCheckConstants.NO_INTERNET
+                                )
+                            )
                         }
-
-                    } else {
-                        onSocketError(it.exception)
                     }
-                }
+                } else
+                    validationCheckMLD.postValue(
+                        ValidationCheck(
+                            BaseApplication.applicationContext().getString(R.string.no_internet),
+                            ValidationCheckConstants.NO_INTERNET
+                        )
+                    )
             } catch (ex: java.lang.Exception) {
                 onSocketError(ex)
+                validationCheckMLD.postValue(
+                    ValidationCheck(
+                        BaseApplication.applicationContext().getString(R.string.something_went_wrong),
+                        ValidationCheckConstants.NO_INTERNET
+                    )
+                )
             }
         }
     }
 
     private fun onSocketError(ex: Throwable) {
         println("Error occurred : ${ex.message}")
+        validationCheckMLD.postValue(
+            ValidationCheck(
+                ex.message?:BaseApplication.applicationContext().getString(R.string.something_went_wrong),
+                ValidationCheckConstants.NO_INTERNET
+            )
+        )
     }
 
     fun getCityAqiMap(): LiveData<HashMap<String, ArrayList<AqiTime>>> = _cityHashMapMLD
@@ -105,6 +137,8 @@ class MainViewModel @Inject constructor(
         super.onCleared()
     }
 
+    fun getValidationCheck(): LiveData<ValidationCheck> = validationCheckMLD
+
     fun createBarData(): BarData {
         val values = ArrayList<BarEntry>()
         //reverse selectedCityAqiList to start from latest entry
@@ -115,13 +149,18 @@ class MainViewModel @Inject constructor(
         for (i in 1 until selectedCityAqiList.size) {
             if (selectedTImeIntervalBasedAqiList.size == 6) {
                 break
-            } else if (selectedTImeIntervalBasedAqiList[selectedTImeIntervalBasedAqiList.size-1].timestamp!! - selectedCityAqiList[i].timestamp!! >= 30000L) {
+            } else if (selectedTImeIntervalBasedAqiList[selectedTImeIntervalBasedAqiList.size - 1].timestamp!! - selectedCityAqiList[i].timestamp!! >= 30000L) {
                 selectedTImeIntervalBasedAqiList.add(selectedCityAqiList[i])
             }
         }
 
         for (i in 0 until selectedTImeIntervalBasedAqiList.size)
-            values.add(BarEntry((i + 1).toFloat(), selectedTImeIntervalBasedAqiList[i].aqi?.toFloat()!!))
+            values.add(
+                BarEntry(
+                    (i + 1).toFloat(),
+                    selectedTImeIntervalBasedAqiList[i].aqi?.toFloat()!!
+                )
+            )
         val barDataSet = BarDataSet(values, "AQI Index")
         val dataSets: ArrayList<IBarDataSet> = ArrayList()
         dataSets.add(barDataSet)
