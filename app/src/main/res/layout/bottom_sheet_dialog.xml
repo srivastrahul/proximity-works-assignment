@@ -22,19 +22,33 @@
                 android:textSize="18sp"
                 android:text="@string/bar_chart_title"/>
 
+            <HorizontalScrollView
+                android:id="@+id/barChartHS"
+                android:layout_width="800dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/barChartTitleTV"
+                android:layout_margin="10dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
 
             <com.github.mikephil.charting.charts.BarChart
                 android:id="@+id/barChart"
-                android:layout_width="match_parent"
-                android:layout_height="500dp"
-                android:layout_below="@+id/barChartTitleTV"
-                android:layout_margin="10dp" />
+                android:layout_width="500dp"
+                android:layout_height="500dp" />
+
+                </LinearLayout>
+
+            </HorizontalScrollView>
 
             <TextView
                 android:id="@+id/sparkLineTitleTV"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/barChart"
+                android:layout_below="@id/barChartHS"
                 android:layout_marginTop="10dp"
                 android:layout_centerHorizontal="true"
                 android:textColor="@color/black"

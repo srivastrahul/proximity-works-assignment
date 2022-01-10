@@ -31,7 +31,7 @@ class MainViewModel @Inject constructor(
     var timestamp: Long = 0L
     private val _lastUpdatedCityAqiList = MutableLiveData<ArrayList<CityAqiTime>>()
     var selectedCityAqiList = ArrayList<AqiTime>()
-    var selectedTimeIntervalBasedQiList =
+    var selectedTImeIntervalBasedAqiList =
         ArrayList<AqiTime>()  //time interval of 30s from current timestamp
     var selectedCity: String = ""
 
@@ -109,18 +109,19 @@ class MainViewModel @Inject constructor(
         val values = ArrayList<BarEntry>()
         //reverse selectedCityAqiList to start from latest entry
         selectedCityAqiList.reverse()
+        selectedTImeIntervalBasedAqiList.clear()
         //populating only 6 entries in reverse chronological order for display
-        selectedTimeIntervalBasedQiList.add(selectedCityAqiList[0])
+        selectedTImeIntervalBasedAqiList.add(selectedCityAqiList[0])
         for (i in 1 until selectedCityAqiList.size) {
-            if (selectedTimeIntervalBasedQiList.size == 6)
+            if (selectedTImeIntervalBasedAqiList.size == 6) {
                 break
-            else if (selectedTimeIntervalBasedQiList[selectedTimeIntervalBasedQiList.size-1].timestamp!! - selectedCityAqiList[i].timestamp!! >= 30000) {
-                selectedTimeIntervalBasedQiList.add(selectedCityAqiList[i])
+            } else if (selectedTImeIntervalBasedAqiList[selectedTImeIntervalBasedAqiList.size-1].timestamp!! - selectedCityAqiList[i].timestamp!! >= 30000L) {
+                selectedTImeIntervalBasedAqiList.add(selectedCityAqiList[i])
             }
         }
 
-        for (i in 0 until selectedTimeIntervalBasedQiList.size)
-            values.add(BarEntry((i + 1).toFloat(), selectedTimeIntervalBasedQiList[i].aqi?.toFloat()!!))
+        for (i in 0 until selectedTImeIntervalBasedAqiList.size)
+            values.add(BarEntry((i + 1).toFloat(), selectedTImeIntervalBasedAqiList[i].aqi?.toFloat()!!))
         val barDataSet = BarDataSet(values, "AQI Index")
         val dataSets: ArrayList<IBarDataSet> = ArrayList()
         dataSets.add(barDataSet)
@@ -129,10 +130,10 @@ class MainViewModel @Inject constructor(
 
     //for spark lines
     fun getSelectedCityAqiArray() =
-        FloatArray(selectedTimeIntervalBasedQiList.size) { i -> selectedTimeIntervalBasedQiList[i].aqi?.toFloat()!! }
+        FloatArray(selectedTImeIntervalBasedAqiList.size) { i -> selectedTImeIntervalBasedAqiList[i].aqi?.toFloat()!! }
 
     //for time formatting on x-axis
     fun getSelectedCityTimeStampArray() =
-        LongArray(selectedTimeIntervalBasedQiList.size) { i -> selectedTimeIntervalBasedQiList[i].timestamp!! }
+        LongArray(selectedTImeIntervalBasedAqiList.size) { i -> selectedTImeIntervalBasedAqiList[i].timestamp!! }
 
 }

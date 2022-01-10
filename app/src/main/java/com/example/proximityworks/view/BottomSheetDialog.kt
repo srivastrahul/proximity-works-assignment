@@ -55,7 +55,7 @@ class BottomSheetDialog: BottomSheetDialogFragment() {
         barChart.setDrawValueAboveBar(false)
 
         val xAxis = barChart.xAxis
-        xAxis.granularity = 1000000000000F
+        xAxis.granularity = 10F
         xAxis.valueFormatter = object: IAxisValueFormatter {
             override fun getFormattedValue(p0: Float, p1: AxisBase?): String {
                 val timeFormat = SimpleDateFormat("hh:mm aa", Locale.getDefault())
@@ -64,16 +64,17 @@ class BottomSheetDialog: BottomSheetDialogFragment() {
         }
 
         val yAxisLeft = barChart.axisLeft
-        yAxisLeft.granularity = 100f
+        yAxisLeft.granularity = 50f
         yAxisLeft.axisMinimum = 0f
 
         val yAxisRight = barChart.axisRight
-        yAxisRight.granularity = 100f
+        yAxisRight.granularity = 50f
         yAxisRight.axisMinimum = 0f
     }
 
     private fun prepareChartData(data: BarData) {
         data.setValueTextSize(12f)
+        data.barWidth = 0.5f
         barChart.data = data
         barChart.invalidate()
     }
