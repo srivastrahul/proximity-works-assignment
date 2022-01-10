@@ -2,21 +2,13 @@ package com.example.proximityworks
 
 import android.app.Application
 import android.content.Context
+import androidx.lifecycle.LifecycleObserver
 import com.example.proximityworks.di.DaggerApplicationComponent
 
-class BaseApplication: Application() {
+class BaseApplication: Application(), LifecycleObserver {
 
-    init {
-        instance = this
-    }
 
     companion object {
-        private var instance: BaseApplication? = null
-
-        fun applicationContext(): Context {
-            return instance!!.applicationContext
-        }
-
         val appComponent = DaggerApplicationComponent.create()
     }
 

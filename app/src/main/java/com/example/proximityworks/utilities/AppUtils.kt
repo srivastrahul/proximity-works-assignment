@@ -7,9 +7,9 @@ import android.os.Build
 import com.example.proximityworks.BaseApplication
 
 object AppUtils {
-    fun isInternetAvailable(context: Context? = BaseApplication.applicationContext()): Boolean {
+    fun isInternetAvailable(context: Context): Boolean {
         val connectivityManager =
-            context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val nw = connectivityManager.activeNetwork ?: return false
         val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
         return when {

@@ -14,6 +14,7 @@ import com.example.proximityworks.R
 import com.example.proximityworks.adapter.CityAqiAdapter
 import com.example.proximityworks.databinding.ActivityMainBinding
 import com.example.proximityworks.di.ViewModelFactory
+import com.example.proximityworks.utilities.AppUtils
 import com.example.proximityworks.utilities.ValidationCheckConstants
 import com.example.proximityworks.viewmodels.MainViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,7 +45,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        viewModel.subscribeToSocketEvents()
+        if (AppUtils.isInternetAvailable(this))
+            viewModel.subscribeToSocketEvents()
+        else
+            showToastMessage(getString(R.string.no_internet))
     }
 
     override fun onStop() {
@@ -59,9 +63,8 @@ class MainActivity : AppCompatActivity() {
         })
 
         viewModel.getValidationCheck().observe(this, {
-            when (it.type) {
-                ValidationCheckConstants.NO_INTERNET, ValidationCheckConstants.EXCEPTION_NO_RESPONSE -> showToastMessage(it.message)
-            }
+           if (it == ValidationCheckConstants.EXCEPTION_NO_RESPONSE)
+               showToastMessage(getString(R.string.something_went_wrong))
         })
     }
 
