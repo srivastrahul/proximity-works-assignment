@@ -14,11 +14,8 @@ import javax.inject.Inject
 class WebServiceProvider @Inject constructor(){
     private var _webSocket: WebSocket? = null
 
-    private val socketOkHttpClient = OkHttpClient.Builder()
-        .readTimeout(30, TimeUnit.SECONDS)
-        .connectTimeout(39, TimeUnit.SECONDS)
-        .hostnameVerifier { _, _ -> true }
-        .build()
+    @Inject
+    lateinit var socketOkHttpClient: OkHttpClient
 
 
     private var _webSocketListener: WebSocketListener? = null

@@ -24,10 +24,11 @@ import javax.xml.datatype.DatatypeConstants.DAYS
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.robinhood.spark.SparkView
+import javax.inject.Inject
 
 
 @ExperimentalCoroutinesApi
-class BottomSheetDialog: BottomSheetDialogFragment() {
+class BottomSheetDialog @Inject constructor(): BottomSheetDialogFragment() {
     private val viewModel: MainViewModel by activityViewModels()
     private lateinit var binding: BottomSheetDialogBinding
     private lateinit var sparkView: SparkView

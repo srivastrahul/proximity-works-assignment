@@ -25,11 +25,13 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
-    lateinit var viewModel: MainViewModel
-    lateinit var mainActivityBinding: ActivityMainBinding
-    lateinit var cityAqiRecyclerView: RecyclerView
-    lateinit var cityAqiAdapter: CityAqiAdapter
-    lateinit var linearLayoutManager: LinearLayoutManager
+    @Inject
+    lateinit var bottomSheetDialog: BottomSheetDialog
+    private lateinit var viewModel: MainViewModel
+    private lateinit var mainActivityBinding: ActivityMainBinding
+    private lateinit var cityAqiRecyclerView: RecyclerView
+    private lateinit var cityAqiAdapter: CityAqiAdapter
+    private lateinit var linearLayoutManager: LinearLayoutManager
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,7 +81,6 @@ class MainActivity : AppCompatActivity() {
     private val onClickLambda = { city: String? ->
         viewModel.selectedCity = city!!
         viewModel.selectedCityAqiList = viewModel.getCityAqiMap().value?.get(city)!!
-        val bottomSheetDialog = BottomSheetDialog()
         bottomSheetDialog.show(supportFragmentManager, BottomSheetDialog.TAG)
     }
 
