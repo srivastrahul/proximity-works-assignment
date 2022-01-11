@@ -49,7 +49,12 @@ class BottomSheetDialog @Inject constructor(): BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         configureChartAppearance()
         prepareChartData(viewModel.createBarData())
-        sparkView.adapter = SparkLineAdapter(viewModel.getSelectedCityAqiArray())
+        val sparkLineEntries = viewModel.getSelectedCityAqiArray()
+        if (sparkLineEntries.size > 1) {
+            sparkView.adapter = SparkLineAdapter(sparkLineEntries)
+            sparkView.visibility = View.VISIBLE
+            binding.sparViewNoEntryTV.visibility = View.GONE
+        }
     }
 
     private fun configureChartAppearance() {
